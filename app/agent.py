@@ -2,7 +2,7 @@
 
 import os
 import asyncio
-from typing import Optional, List, Dict
+from typing import List, Dict
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 from google import genai
