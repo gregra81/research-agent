@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Agent</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔬 Research Agent</h1>
+            <p class="subtitle">AI-Powered Research Assistant</p>
+        </header>
+
+        <div class="status-bar">
+            <div>
+                <span id="status" class="status">Checking...</span>
+                <span class="free-tier-badge">🆓 Free Tier Optimized</span>
+            </div>
+            <span id="model-info" class="model-info"></span>
+        </div>
+
+        <main>
+            <div class="rate-limit-info">
+                ℹ️ <strong>Free Tier Protection:</strong> Limited to 10 requests per minute to preserve your API quota
+            </div>
+            
+            <div class="search-section">
+                <h2>Ask a Research Question</h2>
+                
+                <div class="settings-grid">
+                    <div class="model-selector">
+                        <label for="model-select">Select Model:</label>
+                        <select id="model-select">
+                            <option value="">Loading models...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="token-selector">
+                        <label for="token-limit">
+                            Max Tokens: <span id="token-value">512</span>
+                            <span class="token-hint">(Lower = Less Cost 💰)</span>
+                        </label>
+                        <input 
+                            type="range" 
+                            id="token-limit" 
+                            min="128" 
+                            max="2048" 
+                            value="512" 
+                            step="128"
+                            oninput="updateTokenValue(this.value)"
+                        >
+                        <div class="token-labels">
+                            <span>Minimal (128)</span>
+                            <span>Balanced (512)</span>
+                            <span>Detailed (2048)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="search-box">
+                    <textarea 
+                        id="query-input" 
+                        placeholder="Enter your research question here..."
+                        rows="3"
+                    ></textarea>
+                    <button id="research-btn" onclick="performResearch()">
+                        🔍 Research
+                    </button>
+                </div>
+            </div>
+
+            <div id="results-section" class="results-section" style="display: none;">
+                <h2>Results</h2>
+                <div id="results-content" class="results-content"></div>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Researching...</p>
+            </div>
+        </main>
+
+        <footer>
+            <h3>API Endpoints:</h3>
+            <ul class="api-links">
+                <li><a href="/health">/health</a> - Health check</li>
+                <li><a href="/agent/info">/agent/info</a> - Agent information</li>
+                <li><a href="/docs">/docs</a> - Interactive API docs</li>
+                <li><a href="/redoc">/redoc</a> - ReDoc documentation</li>
+            </ul>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
