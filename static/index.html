@@ -59,6 +59,19 @@
                     </div>
                 </div>
                 
+                <div class="research-mode-selector">
+                    <label class="mode-toggle">
+                        <input type="checkbox" id="deep-research-toggle" onchange="updateResearchMode()">
+                        <span class="toggle-label">
+                            <span class="standard-mode">⚡ Quick Research</span>
+                            <span class="deep-mode">🧠 Deep Research (PM Mode)</span>
+                        </span>
+                    </label>
+                    <div id="deep-research-warning" class="deep-warning" style="display: none;">
+                        ⚠️ Deep Research uses 5-10x more tokens (7 comprehensive steps including Devil's Advocate). Best for complex Product Management questions.
+                    </div>
+                </div>
+                
                 <div class="search-box">
                     <textarea 
                         id="query-input" 
@@ -66,7 +79,7 @@
                         rows="3"
                     ></textarea>
                     <button id="research-btn" onclick="performResearch()">
-                        🔍 Research
+                        <span id="research-btn-text">🔍 Research</span>
                     </button>
                 </div>
             </div>

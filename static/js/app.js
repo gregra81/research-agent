@@ -10,6 +10,25 @@ function updateTokenValue(value) {
     document.getElementById('token-value').textContent = value;
 }
 
+function updateResearchMode() {
+    const toggle = document.getElementById('deep-research-toggle');
+    const warning = document.getElementById('deep-research-warning');
+    const buttonText = document.getElementById('research-btn-text');
+    const queryInput = document.getElementById('query-input');
+    
+    if (toggle.checked) {
+        // Deep Research Mode
+        warning.style.display = 'block';
+        buttonText.textContent = '🧠 Deep Research (PM)';
+        queryInput.placeholder = 'Enter your Product Management question (e.g., "Should we build feature X?")';
+    } else {
+        // Standard Research Mode
+        warning.style.display = 'none';
+        buttonText.textContent = '🔍 Research';
+        queryInput.placeholder = 'Enter your research question here...';
+    }
+}
+
 async function checkAgentStatus() {
     const statusEl = document.getElementById('status');
     const modelInfoEl = document.getElementById('model-info');
@@ -61,17 +80,17 @@ async function loadAvailableModels() {
                 modelSelect.appendChild(option);
             });
             
-            // Set default to gemini-2.0-flash-exp if available
-            const defaultModel = data.models.find(m => m.name === 'gemini-2.0-flash-exp');
+            // Set default to gemini-2.0-flash if available
+            const defaultModel = data.models.find(m => m.name === 'gemini-2.0-flash');
             if (defaultModel) {
-                modelSelect.value = 'gemini-2.0-flash-exp';
+                modelSelect.value = 'gemini-2.0-flash';
             }
         } else {
             modelSelect.innerHTML = '<option value="">No models available</option>';
         }
     } catch (error) {
         console.error('Failed to load models:', error);
-        modelSelect.innerHTML = '<option value="gemini-2.0-flash-exp">💰 gemini-2.0-flash-exp (default)</option>';
+        modelSelect.innerHTML = '<option value="gemini-2.0-flash">💰 gemini-2.0-flash (default)</option>';
     }
 }
 
@@ -79,6 +98,7 @@ async function performResearch() {
     const queryInput = document.getElementById('query-input');
     const modelSelect = document.getElementById('model-select');
     const tokenLimit = document.getElementById('token-limit');
+    const deepToggle = document.getElementById('deep-research-toggle');
     const resultsSection = document.getElementById('results-section');
     const resultsContent = document.getElementById('results-content');
     const loading = document.getElementById('loading');
@@ -87,6 +107,7 @@ async function performResearch() {
     const query = queryInput.value.trim();
     const selectedModel = modelSelect.value;
     const maxTokens = parseInt(tokenLimit.value);
+    const isDeepResearch = deepToggle.checked;
     
     if (!query) {
         alert('Please enter a research question');
@@ -98,13 +119,22 @@ async function performResearch() {
         return;
     }
     
-    // Show loading state
+    // Show loading state with appropriate message
+    const loadingText = loading.querySelector('p');
+    if (loadingText) {
+        loadingText.textContent = isDeepResearch ? 
+            'Deep researching... (this takes longer, running 7 steps including Devil\'s Advocate)' : 
+            'Researching...';
+    }
     loading.style.display = 'block';
     resultsSection.style.display = 'none';
     researchBtn.disabled = true;
     
     try {
-        const response = await fetch('/research', {
+        // Choose endpoint based on mode
+        const endpoint = isDeepResearch ? '/deep-research' : '/research';
+        
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -130,13 +160,30 @@ async function performResearch() {
         // Clear previous results
         resultsContent.innerHTML = '';
         
+        // Display mode badge
+        if (isDeepResearch && data.mode === 'deep_research') {
+            const modeBadge = document.createElement('div');
+            modeBadge.style.cssText = `
+                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+                color: white;
+                padding: 10px 15px;
+                border-radius: 8px;
+                margin-bottom: 15px;
+                font-weight: 600;
+                font-size: 0.95em;
+                box-shadow: 0 2px 8px rgba(118, 75, 162, 0.3);
+            `;
+            modeBadge.innerHTML = `🧠 <strong>Deep Research Mode:</strong> Product Management Analysis (${data.steps_completed} steps completed)`;
+            resultsContent.appendChild(modeBadge);
+        }
+        
         // Display model info
         const modelInfo = document.createElement('div');
         modelInfo.style.cssText = 'color: #6c757d; font-size: 0.9em; margin-bottom: 10px; font-style: italic;';
-        modelInfo.innerHTML = `Response from: <strong>${data.model}</strong> | Max tokens: <strong>${maxTokens}</strong>`;
+        modelInfo.innerHTML = `Response from: <strong>${data.model}</strong>`;
         resultsContent.appendChild(modelInfo);
         
-        // Display token usage in a separate styled div (always show, even if 0)
+        // Display token usage in a separate styled div (for both standard and deep research)
         if (data.token_usage) {
             const tokenUsageDiv = document.createElement('div');
             tokenUsageDiv.style.cssText = `
@@ -155,9 +202,10 @@ async function performResearch() {
             
             const isEstimated = totalTokens > 0 && (promptTokens + completionTokens > 0);
             const estimatedLabel = isEstimated ? '' : ' <span style="font-size:0.8em;">(estimated)</span>';
+            const modeLabel = isDeepResearch ? ' <span style="font-size:0.85em;color:#ffd700;">(7-step Deep Research)</span>' : '';
             
             tokenUsageDiv.innerHTML = `
-                <strong>📊 Token Usage:</strong>${estimatedLabel}<br>
+                <strong>📊 Token Usage:</strong>${modeLabel}${estimatedLabel}<br>
                 Input: ${promptTokens} tokens | 
                 Output: ${completionTokens} tokens | 
                 <strong>Total: ${totalTokens} tokens</strong>

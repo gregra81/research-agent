@@ -102,6 +102,88 @@ main {
     margin-bottom: 30px;
 }
 
+.research-mode-selector {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+}
+
+.mode-toggle {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.mode-toggle input[type="checkbox"] {
+    width: 50px;
+    height: 26px;
+    appearance: none;
+    background: #ccc;
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-right: 15px;
+}
+
+.mode-toggle input[type="checkbox"]:checked {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.mode-toggle input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: white;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.mode-toggle input[type="checkbox"]:checked::before {
+    transform: translateX(24px);
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 1.05em;
+}
+
+.standard-mode {
+    color: #28a745;
+}
+
+.deep-mode {
+    color: #764ba2;
+    display: none;
+}
+
+.mode-toggle input[type="checkbox"]:checked ~ .toggle-label .standard-mode {
+    display: none;
+}
+
+.mode-toggle input[type="checkbox"]:checked ~ .toggle-label .deep-mode {
+    display: inline;
+}
+
+.deep-warning {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, #fff3cd 0%, #fff8e1 100%);
+    border-left: 4px solid #ff9800;
+    border-radius: 5px;
+    font-size: 0.9em;
+    color: #856404;
+}
+
 .search-section h2 {
     color: #333;
     margin-bottom: 20px;

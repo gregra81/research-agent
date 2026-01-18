@@ -9,7 +9,7 @@ import os
 import time
 from collections import deque
 
-from app.agent import ResearchAgent, list_available_models
+from app.agent import ResearchAgent, DeepResearchAgent, list_available_models
 
 
 # Initialize FastAPI app
@@ -25,8 +25,9 @@ if static_path.exists():
     app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
 
-# Initialize agent cache (will be lazy-loaded per model and max_tokens)
+# Initialize agent caches (will be lazy-loaded per model and max_tokens)
 _agents: dict[tuple[str, int], ResearchAgent] = {}
+_deep_agents: dict[str, DeepResearchAgent] = {}
 
 # Simple rate limiter: track request timestamps
 _request_timestamps = deque(maxlen=50)  # Keep last 50 requests
@@ -57,7 +58,7 @@ def check_rate_limit():
     _request_timestamps.append(now)
 
 
-def get_agent(model_name: str = "gemini-2.0-flash-exp", max_tokens: int = 512) -> ResearchAgent:
+def get_agent(model_name: str = "gemini-2.0-flash", max_tokens: int = 512) -> ResearchAgent:
     """Get or create a research agent instance for a specific model and token limit"""
     global _agents
     cache_key = (model_name, max_tokens)
@@ -69,10 +70,21 @@ def get_agent(model_name: str = "gemini-2.0-flash-exp", max_tokens: int = 512) -
     return _agents[cache_key]
 
 
+def get_deep_agent(model_name: str = "gemini-2.0-flash") -> DeepResearchAgent:
+    """Get or create a deep research agent instance for a specific model"""
+    global _deep_agents
+    if model_name not in _deep_agents:
+        try:
+            _deep_agents[model_name] = DeepResearchAgent(model_name=model_name)
+        except ValueError as e:
+            raise HTTPException(status_code=500, detail=str(e))
+    return _deep_agents[model_name]
+
+
 # Request/Response models
 class ResearchRequest(BaseModel):
     query: str
-    model: str = "gemini-2.0-flash-exp"
+    model: str = "gemini-2.0-flash"
     max_tokens: int = 512  # Lower for free tier optimization
 
 
@@ -86,6 +98,15 @@ class ResearchResponse(BaseModel):
     query: str
     result: str
     model: str
+    token_usage: TokenUsage
+
+
+class DeepResearchResponse(BaseModel):
+    query: str
+    result: str
+    model: str
+    mode: str
+    steps_completed: int
     token_usage: TokenUsage
 
 
@@ -157,4 +178,47 @@ async def research(request: ResearchRequest):
         result=result,
         model=agent.model_name,
         token_usage=TokenUsage(**token_usage)
+    )
+
+
+@app.post("/deep-research", response_model=DeepResearchResponse)
+async def deep_research(request: ResearchRequest):
+    """
+    Perform DEEP RESEARCH using LangGraph multi-step workflow
+    Optimized for Product Management decision-making
+    
+    ⚠️ WARNING: Uses 5-10x more tokens than standard research
+    
+    Workflow:
+    1. Research Planning
+    2. Market Analysis
+    3. User Insights
+    4. Competitive Landscape
+    5. Risk Assessment
+    6. Devil's Advocate (Critical Analysis)
+    7. Strategic Synthesis
+    
+    Args:
+        request: Research request with PM question and model selection
+        
+    Returns:
+        Comprehensive research report with all analysis steps
+    """
+    # Check rate limit (deep research counts as 1 request but uses more tokens)
+    check_rate_limit()
+    
+    deep_agent = get_deep_agent(model_name=request.model)
+    report, metadata = await deep_agent.deep_research(request.query)
+    
+    return DeepResearchResponse(
+        query=request.query,
+        result=report,
+        model=deep_agent.model_name,
+        mode="deep_research",
+        steps_completed=metadata.get("steps_completed", 7),
+        token_usage=TokenUsage(
+            prompt_tokens=metadata.get("prompt_tokens", 0),
+            completion_tokens=metadata.get("completion_tokens", 0),
+            total_tokens=metadata.get("total_tokens", 0)
+        )
     )

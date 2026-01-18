@@ -146,8 +146,8 @@ Response includes price tiers and indicators:
 {
   "models": [
     {
-      "name": "gemini-2.0-flash-exp",
-      "display_name": "Gemini 2.0 Flash (Experimental)",
+      "name": "gemini-2.0-flash",
+      "display_name": "Gemini 2.0 Flash",
       "price_tier": 0,
       "price_indicator": "💰"
     }
@@ -161,7 +161,7 @@ curl -X POST http://localhost:8000/research \
   -H "Content-Type: application/json" \
   -d '{
     "query": "What are the top 3 largest countries?",
-    "model": "gemini-2.0-flash-exp",
+    "model": "gemini-2.0-flash",
     "max_tokens": 512
   }'
 ```
@@ -171,7 +171,7 @@ Response includes token usage:
 {
   "query": "What are the top 3 largest countries?",
   "result": "Russia, Canada, and USA are the three largest...",
-  "model": "gemini-2.0-flash-exp",
+  "model": "gemini-2.0-flash",
   "token_usage": {
     "prompt_tokens": 25,
     "completion_tokens": 48,
